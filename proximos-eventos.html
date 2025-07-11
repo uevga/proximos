@@ -1,54 +1,87 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Próximos Eventos - Calendario Google</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Próximos Eventos</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #f1f8e9);
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #00796b;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+  }
+
+  .event {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin: 15px auto;
+    padding: 15px;
+    max-width: 600px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s forwards;
+  }
+
+  .event h3 {
+    margin: 0;
+    color: #388e3c;
+  }
+
+  .event p {
+    margin: 5px 0 0;
+    color: #555;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
 </head>
 <body>
-  <div id="proximos-eventos" style="font-family: Arial, sans-serif; padding: 1em; background: #f1f9ff; border: 1px solid #ccc; border-radius: 8px;">
-    <h2 style="color: #00529b;">📅 Próximos eventos académicos</h2>
-    <p>Cargando eventos...</p>
-  </div>
+  <h1>Próximos Eventos</h1>
+  <div id="events"></div>
 
-  <script>
-  const calendarId = 'victor.gerardo.01h01566@gmail.com';
-  const apiKey = 'AIzaSyCdJAtlB3Uho5qFL3Azj9uWWaW_Eh87t0g';
+<script>
+const calendarId = "victor.gerardo.01h01566@gmail.com";
+const apiKey = "AIzaSyCdJAtlB3Uho5qFL3Azj9uWWaW_Eh87t0g";
+const now = new Date().toISOString();
 
-  const maxResults = 5;
-
-  fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?key=${apiKey}&orderBy=startTime&singleEvents=true&timeMin=${(new Date()).toISOString()}&maxResults=${maxResults}`)
-    .then(response => response.json())
-    .then(data => {
-      const container = document.getElementById('proximos-eventos');
-      container.innerHTML = ''; // limpia el mensaje de "cargando"
-
-      if (!data.items || data.items.length === 0) {
-        container.innerHTML = '<p>No hay próximos eventos.</p>';
-        return;
-      }
-
-      const ul = document.createElement('ul');
-      ul.style.listStyle = 'none';
-      ul.style.padding = '0';
-
-      data.items.forEach(event => {
-        const li = document.createElement('li');
-        li.style.padding = '0.5em 0';
-        li.style.borderBottom = '1px solid #ddd';
-
-        const date = new Date(event.start.dateTime || event.start.date).toLocaleString();
-        li.innerHTML = `<strong>${date}</strong>: ${event.summary}`;
-        ul.appendChild(li);
-      });
-
-      container.appendChild(ul);
-    })
-    .catch(err => {
-      console.error(err);
-      document.getElementById('proximos-eventos').innerHTML = '<p style="color: red;">Error al cargar eventos.</p>';
+fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?orderBy=startTime&singleEvents=true&timeMin=${now}&maxResults=10&key=${apiKey}`)
+  .then(response => response.json())
+  .then(data => {
+    const eventsDiv = document.getElementById('events');
+    if (!data.items || data.items.length === 0) {
+      eventsDiv.innerHTML = "<p>No hay eventos próximos.</p>";
+      return;
+    }
+    data.items.forEach(event => {
+      const eventDiv = document.createElement('div');
+      eventDiv.className = "event";
+      const start = event.start.dateTime || event.start.date;
+      eventDiv.innerHTML = `
+        <h3>${event.summary}</h3>
+        <p><strong>Inicio:</strong> ${new Date(start).toLocaleString()}</p>
+        <p>${event.description || ""}</p>
+      `;
+      eventsDiv.appendChild(eventDiv);
     });
-  </script>
+  })
+  .catch(err => {
+    document.getElementById('events').innerHTML = "<p>Error al cargar los eventos.</p>";
+    console.error(err);
+  });
+</script>
 </body>
 </html>
