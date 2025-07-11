@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Próximos Eventos - Calendario Google</title>
+</head>
+<body>
+  <div id="proximos-eventos" style="font-family: Arial, sans-serif; padding: 1em; background: #f1f9ff; border: 1px solid #ccc; border-radius: 8px;">
+    <h2 style="color: #00529b;">📅 Próximos eventos académicos</h2>
+    <p>Cargando eventos...</p>
+  </div>
+
+  <script>
+  const calendarId = 'victor.gerardo.01h01566@gmail.com';
+  const apiKey = 'AIzaSyCdJAtlB3Uho5qFL3Azj9uWWaW_Eh87t0g';
+
+  const maxResults = 5;
+
+  fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?key=${apiKey}&orderBy=startTime&singleEvents=true&timeMin=${(new Date()).toISOString()}&maxResults=${maxResults}`)
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('proximos-eventos');
+      container.innerHTML = ''; // limpia el mensaje de "cargando"
+
+      if (!data.items || data.items.length === 0) {
+        container.innerHTML = '<p>No hay próximos eventos.</p>';
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      ul.style.listStyle = 'none';
+      ul.style.padding = '0';
+
+      data.items.forEach(event => {
+        const li = document.createElement('li');
+        li.style.padding = '0.5em 0';
+        li.style.borderBottom = '1px solid #ddd';
+
+        const date = new Date(event.start.dateTime || event.start.date).toLocaleString();
+        li.innerHTML = `<strong>${date}</strong>: ${event.summary}`;
+        ul.appendChild(li);
+      });
+
+      container.appendChild(ul);
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('proximos-eventos').innerHTML = '<p style="color: red;">Error al cargar eventos.</p>';
+    });
+  </script>
+</body>
+</html>
