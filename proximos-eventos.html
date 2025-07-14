@@ -66,13 +66,34 @@ fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal
       eventsDiv.innerHTML = "<p>No hay eventos próximos.</p>";
       return;
     }
+
     data.items.forEach(event => {
       const eventDiv = document.createElement('div');
       eventDiv.className = "event";
-      const start = event.start.dateTime || event.start.date;
+
+      const startStr = event.start.dateTime || event.start.date;
+
+      const fecha = new Date(startStr);
+
+      const opcionesFecha = {
+        timeZone: "America/Guayaquil",
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      const opcionesHora = {
+        timeZone: "America/Guayaquil",
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+
+      const fechaLegible = new Intl.DateTimeFormat('es-EC', opcionesFecha).format(fecha);
+      const horaLegible = new Intl.DateTimeFormat('es-EC', opcionesHora).format(fecha);
+
       eventDiv.innerHTML = `
         <h3>${event.summary}</h3>
-        <p><strong>Inicio:</strong> ${new Date(start).toLocaleString()}</p>
+        <p><strong>Cuándo:</strong> ${fechaLegible} — ${horaLegible}</p>
         <p>${event.description || ""}</p>
       `;
       eventsDiv.appendChild(eventDiv);
