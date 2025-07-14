@@ -48,6 +48,10 @@
     }
   }
 </style>
+
+<!-- Incluimos Luxon -->
+<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+
 </head>
 <body>
   <h1>Próximos Eventos</h1>
@@ -67,33 +71,22 @@ fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal
       return;
     }
 
+    const DateTime = luxon.DateTime;
+
     data.items.forEach(event => {
       const eventDiv = document.createElement('div');
       eventDiv.className = "event";
 
       const startStr = event.start.dateTime || event.start.date;
 
-      const fecha = new Date(startStr);
+      const fecha = DateTime.fromISO(startStr, { zone: 'America/Guayaquil' });
 
-      const opcionesFecha = {
-        timeZone: "America/Guayaquil",
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      };
-      const opcionesHora = {
-        timeZone: "America/Guayaquil",
-        hour: '2-digit',
-        minute: '2-digit'
-      };
-
-      const fechaLegible = new Intl.DateTimeFormat('es-EC', opcionesFecha).format(fecha);
-      const horaLegible = new Intl.DateTimeFormat('es-EC', opcionesHora).format(fecha);
+      const fechaLegible = fecha.setLocale('es').toLocaleString({ weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+      const horaLegible = fecha.isOffsetFixed ? '' : ` — ${fecha.toLocaleString(DateTime.TIME_24_SIMPLE)}`;
 
       eventDiv.innerHTML = `
         <h3>${event.summary}</h3>
-        <p><strong>Cuándo:</strong> ${fechaLegible} — ${horaLegible}</p>
+        <p><strong>Cuándo:</strong> ${fechaLegible}${horaLegible}</p>
         <p>${event.description || ""}</p>
       `;
       eventsDiv.appendChild(eventDiv);
